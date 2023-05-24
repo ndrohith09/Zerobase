@@ -42,6 +42,9 @@ except (Exception, psycopg2.DatabaseError) as error:
 
     
 async def main():
+    cursor.execute(CREATE TABLE IF NOT EXISTS Sports (id SERIAL PRIMARY KEY, name VARCHAR(255), type VARCHAR(255))) 
+    conn.commit()
+
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
     conn.commit()
 
@@ -59,6 +62,12 @@ async def get_books():
     return books 
 
 #Dataclasses
+@strawberry.type
+class Sports:
+    id: str
+    name: str
+    type: str
+
 @strawberry.type
 class Fruit:
     demo: str
