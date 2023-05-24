@@ -40,6 +40,9 @@ except (Exception, psycopg2.DatabaseError) as error:
     print("Cannot connect to the PostgreSQL database")
     print(error)  
 
+    
+async def main():
+    
 async def get_books():
      
     try :
