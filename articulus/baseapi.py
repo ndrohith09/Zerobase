@@ -27,6 +27,9 @@ except (Exception, psycopg2.DatabaseError) as error:
 
     
 def main():
+    cursor.execute(CREATE TABLE IF NOT EXISTS Animals (id SERIAL PRIMARY KEY, name VARCHAR(255), family VARCHAR(255))) 
+    conn.commit()
+
     cursor.execute(CREATE TABLE IF NOT EXISTS Birds (id SERIAL PRIMARY KEY, name VARCHAR(255), family VARCHAR(255))) 
     conn.commit()
 
@@ -34,6 +37,12 @@ def main():
     print("Inside main")
 
 #*Dataclasses
+@strawberry.type
+class Animals:
+    id: str
+    name: str
+    family: str
+
 @strawberry.type
 class Birds:
     id: str
@@ -46,7 +55,24 @@ class Birds:
 class Query:
     
     
+    
     #*graphquery
+    @strawberry.field
+    async def all_animals(self) -> typing.List[Animals]:
+        cursor.execute("SELECT * FROM Animals")
+        lst = cursor.fetchall()
+        animals = []
+        for i in lst:
+            animals.append(Animals(id=i[0], name=i[1], family=i[2]))
+        return animals
+
+    @strawberry.field
+    async def get_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Animals(id=lst[0], name=lst[1], family=lst[2])
+
+    
     @strawberry.field
     async def all_birds(self) -> typing.List[Birds]:
         cursor.execute("SELECT * FROM Birds")
