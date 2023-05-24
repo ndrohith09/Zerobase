@@ -25,20 +25,67 @@ except (Exception, psycopg2.DatabaseError) as error:
     print(error)  
 
 #*main
-def main(): 
+def main():
+    cursor.execute('CREATE TABLE IF NOT EXISTS Birds (id SERIAL PRIMARY KEY, name VARCHAR(255), family VARCHAR(255))') 
+    conn.commit() 
     print("Table created successfully")
 
 #*Dataclasses
+@strawberry.type
+class Birds:
+    id: str
+    name: str
+    family: str
+
  
 
 @strawberry.type
 class Query:
-    #*graphquery     
+    #*graphquery
+    @strawberry.field
+    def all_birds(self) -> typing.List[Birds]:
+        cursor.execute("SELECT * FROM Birds")
+        lst = cursor.fetchall()
+        birds = []
+        for i in lst:
+            birds.append(Birds(id=i[0], name=i[1], family=i[2]))
+        return birds
+
+    @strawberry.field
+    def get_birds(self, id: str) -> Birds:
+        cursor.execute("SELECT * FROM Birds WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Birds(id=lst[0], name=lst[1], family=lst[2])
+         
     
 
 @strawberry.type
 class Mutation:
-    #*graphmutation 
+    #*graphmutation
+    @strawberry.mutation
+    def create_birds(self, name: str, family: str) -> Birds:
+        cursor.execute("INSERT INTO Birds (name, family) VALUES (%s, %s)", (name, family))
+        conn.commit()
+        return Birds(name=name, family=family)
+    
+    @strawberry.mutation
+    def update_birds(self, id: str, name: str, family: str) -> Birds:
+        
+        cursor.execute("UPDATE Birds SET name=%s, family=%s WHERE id = %s", (name, family, id))
+        conn.commit()
+        return Birds(name=name, family=family)
+    
+    @strawberry.mutation
+    def delete_birds(self, id: str) -> Birds:
+        cursor.execute("SELECT * FROM Birds WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        if lst is None:
+            return Birds(name=No Data Found, family=No Data Found)
+
+        cursor.execute("DELETE FROM Birds WHERE id = %s", (id,))
+        conn.commit()
+        return Birds(id=lst[0], name=lst[1], family=lst[2])
+     
 
 schema = strawberry.Schema(Query , Mutation)
 
