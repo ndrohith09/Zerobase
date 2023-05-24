@@ -45,25 +45,8 @@ async def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
     conn.commit()
 
-    cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, title VARCHAR(255), instructor VARCHAR(255))) 
-	conn.commit()
-
-    cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, title VARCHAR(255), instructor VARCHAR(255))) 
-conn.commit()
-
     
 async def get_books():
-     
-    try :
-        cursor.execute( 
-            "CREATE TABLE IF NOT EXISTS books (id SERIAL PRIMARY KEY, title VARCHAR(255), instructor VARCHAR(255), publish_date VARCHAR(255))"
-        )
-        conn.commit()
-        print("Table created successfully")
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        pass
-
     # get data from postgres database 
     cursor.execute("SELECT * FROM books")
     course_list = cursor.fetchall()
@@ -71,28 +54,8 @@ async def get_books():
     for course in course_list: 
             books.append(Book(id=course[0], title=course[1], instructor=course[2], publish_date=course[3]))
     return books 
-   
-@strawberry.type
-class Book:
-    id: str
-    title: str
-    instructor: str
-    publish_date: str
 
-
-# @strawberry.type
-# class Query:
-
-#     @strawberry.field
-#     def environment(self, info: Info) -> str:
-#         # list = []
-#         # for key, value in os.environ.items():
-#         #     list.append(key + " : " + value)
-#         #     # access the HOST 
-#         # return str(list)
-#         return os.environ.get('PG_HOST')
-
-
+#Dataclasses
     
     
 @strawberry.type
