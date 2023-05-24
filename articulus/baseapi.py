@@ -43,6 +43,9 @@ except (Exception, psycopg2.DatabaseError) as error:
     
 async def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, title VARCHAR(255), instructor VARCHAR(255))) 
+	conn.commit()
+
+    cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, title VARCHAR(255), instructor VARCHAR(255))) 
 conn.commit()
 
     
