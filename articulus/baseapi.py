@@ -140,5 +140,9 @@ app.include_router(graphql_app, prefix="/graphql")
 
 # main function 
 if __name__ == "__main__": 
+    try:
+        main()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
     print(os.environ['PG_HOST'] , os.environ['PG_DATABASE'] , os.environ['PG_USER'] , os.environ['PG_PASSWORD']) 
     uvicorn.run(app, host='0.0.0.0', port=8000)
