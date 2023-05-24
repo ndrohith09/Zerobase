@@ -8,11 +8,6 @@ import json
 import psycopg2
 import os
 
-# $ ip addr show docker0 | grep -Po 'inet \K[\d.]+'
-
-# DATABASE_URL = "postgresql://postgres:postgres@host.docker.internal:5433/postgres" 
-# DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres" 
-
 try:
 
     # Establish a connection
@@ -23,16 +18,6 @@ try:
         user=os.environ.get('PG_USER'),
         password=os.environ.get('PG_PASSWORD')
     )
-
-    # conn = psycopg2.connect(
-    #     host='database',
-    #     port= 5432,
-    #     database='postgres',
-    #     user='postgres',
-    #     password='postgres'
-    # )
-
-    # conn = psycopg2.connect(os.environ['DATABASE_URL'])
     cursor = conn.cursor()
     print("Connected to the PostgreSQL database")
 
@@ -41,7 +26,7 @@ except (Exception, psycopg2.DatabaseError) as error:
     print(error)  
 
     
-async def main():
+def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Sports (id SERIAL PRIMARY KEY, name VARCHAR(255), type VARCHAR(255))) 
     conn.commit()
 
@@ -51,17 +36,7 @@ async def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
     conn.commit()
 
-    
-async def get_books():
-    # get data from postgres database 
-    cursor.execute("SELECT * FROM books")
-    course_list = cursor.fetchall()
-    books = []
-    for course in course_list: 
-            books.append(Book(id=course[0], title=course[1], instructor=course[2], publish_date=course[3]))
-    return books 
-
-#Dataclasses
+#*Dataclasses
 @strawberry.type
 class Sports:
     id: str
@@ -77,6 +52,7 @@ class Fruit:
     
 @strawberry.type
 class Query:
+    
     #*graphquery
 
 @strawberry.type
