@@ -45,6 +45,9 @@ async def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
     conn.commit()
 
+    cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
+    conn.commit()
+
     
 async def get_books():
     # get data from postgres database 
@@ -56,6 +59,11 @@ async def get_books():
     return books 
 
 #Dataclasses
+@strawberry.type
+class Fruit:
+    demo: str
+    instructor: str
+
     
     
 @strawberry.type
