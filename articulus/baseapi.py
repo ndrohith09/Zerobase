@@ -25,20 +25,68 @@ except (Exception, psycopg2.DatabaseError) as error:
     print(error)  
 
 #*main
-def main(): 
+def main():
+    cursor.execute('CREATE TABLE IF NOT EXISTS Animals (id SERIAL PRIMARY KEY, name VARCHAR(255), country VARCHAR(255))') 
+    conn.commit() 
     print("Table created successfully")
 
 #*Dataclasses
+@strawberry.type
+class Animals:
+    id: str
+    name: str
+    country: str
+
  
 
 @strawberry.type
 class Query:
-    #*graphquery     
+    #*graphquery
+    @strawberry.field
+    def all_animals(self) -> typing.List[Animals]:
+        cursor.execute("SELECT * FROM Animals")
+        lst = cursor.fetchall()
+        animals = []
+        for i in lst:
+            animals.append(Animals(id=i[0], name=i[1], country=i[2]))
+        return animals
+
+    @strawberry.field
+    def get_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Animals(id=lst[0], name=lst[1], country=lst[2])
+         
     
 
 @strawberry.type
 class Mutation:
-    #*graphmutation 
+    #*graphmutation
+    @strawberry.mutation
+    def create_animals(self, name: str, country: str) -> Animals:
+        cursor.execute("INSERT INTO Animals (name, country) VALUES (%s, %s) RETURNING id", (name, country))
+        conn.commit()
+        animals_id = cursor.fetchone()[0]
+        return Animals(id=animals_id,name=name, country=country)
+    
+    @strawberry.mutation
+    def update_animals(self, id: str, name: str, country: str) -> Animals:
+        
+        cursor.execute("UPDATE Animals SET name=%s, country=%s WHERE id = %s", (name, country, id))
+        conn.commit()
+        return Animals(id=id,name=name, country=country)
+    
+    @strawberry.mutation
+    def delete_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        if lst is None:
+            return Animals(id='No Data Found',name='No Data Found', country='No Data Found')
+
+        cursor.execute("DELETE FROM Animals WHERE id = %s", (id,))
+        conn.commit()
+        return Animals(id=lst[0], name=lst[1], country=lst[2])
+     
 
 schema = strawberry.Schema(Query , Mutation)
 
