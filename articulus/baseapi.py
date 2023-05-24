@@ -36,7 +36,7 @@ def main():
     cursor.execute(CREATE TABLE IF NOT EXISTS Books (id SERIAL PRIMARY KEY, demo VARCHAR(255), instructor VARCHAR(255))) 
     conn.commit()
 
-#*Dataclasses
+##Dataclasses
 @strawberry.type
 class Sports:
     id: str
@@ -53,7 +53,7 @@ class Fruit:
 @strawberry.type
 class Query:
     
-    #*graphquery
+    ##graphquery
 
 @strawberry.type
 class Mutation:
