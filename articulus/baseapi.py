@@ -77,19 +77,7 @@ class Fruit:
     
 @strawberry.type
 class Query:
-  
-    @strawberry.field
-    def book(self, id: str) -> Book: 
-        with open("data.json") as courses:
-            course_list = json.load(courses)
-            print(course_list)
-            for course in course_list:
-                print("id" , id , course['id'])
-                if course['id'] == id:
-                    return Book(id=course['id'], title=course['title'], instructor=course['instructor'], publish_date=course['publish_date'])                                
-        return Book(id="0", title="No book found", instructor="No book found", publish_date="No book found")
-    
-    all_books: typing.List[Book] = strawberry.field(resolver=get_books)
+    #*graphquery
 
 @strawberry.type
 class Mutation:
