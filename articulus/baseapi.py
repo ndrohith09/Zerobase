@@ -27,6 +27,8 @@ except (Exception, psycopg2.DatabaseError) as error:
 
     
 def main():
+    cursor.execute(CREATE TABLE IF NOT EXISTS Animals (id SERIAL PRIMARY KEY, name VARCHAR(255), wild VARCHAR(255))) 
+    conn.commit()
     cursor.execute(CREATE TABLE IF NOT EXISTS Birds (id SERIAL PRIMARY KEY, name VARCHAR(255), family VARCHAR(255))) 
     conn.commit()
 
@@ -34,6 +36,12 @@ def main():
     print("Inside main")
 
 #*Dataclasses
+@strawberry.type
+class Animals:
+    id: str
+    name: str
+    wild: str
+
 @strawberry.type
 class Birds:
     id: str
@@ -44,7 +52,23 @@ class Birds:
 @strawberry.type
 class Query:
     
+    
     #*graphquery
+    @strawberry.field
+    def all_animals(self) -> typing.List[Animals]:
+        cursor.execute("SELECT * FROM Animals")
+        lst = cursor.fetchall()
+        animals = []
+        for i in lst:
+            animals.append(Animals(id=i[0], name=i[1], wild=i[2]))
+        return animals
+
+    @strawberry.field
+    def get_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Animals(id=lst[0], name=lst[1], wild=lst[2])
+    
     @strawberry.field
     def all_birds(self) -> typing.List[Birds]:
         cursor.execute("SELECT * FROM Birds")
@@ -64,7 +88,26 @@ class Query:
 @strawberry.type
 class Mutation:
     
+    
     #*graphmutation
+    @strawberry.mutation
+    def create_animals(self, name: str, wild: str) -> Animals:
+        cursor.execute("INSERT INTO Animals (name, wild) VALUES (%s, %s)", (name, wild))
+        conn.commit()
+        return Animals(name=name, wild=wild)
+    
+    @strawberry.mutation
+    def update_animals(self, id: str, name: str, wild: str) -> Animals:
+        cursor.execute("UPDATE Animals SET name=%s, wild=%s WHERE id = %s", (name, wild, id))
+        conn.commit()
+        return Animals(name=name, wild=wild)
+    
+    @strawberry.mutation
+    def delete_animals(self, id: str) -> Animals:
+        cursor.execute("DELETE FROM Animals WHERE id = %s", (id,))
+        conn.commit()
+        return Animals(name=name, wild=wild)
+    
     @strawberry.mutation
     def create_birds(self, name: str, family: str) -> Birds:
         cursor.execute("INSERT INTO Birds (name, family) VALUES (%s, %s)", (name, family))
