@@ -5,14 +5,14 @@ services:
     ports:
       - 8000:8000
     environment:
-      - PG_HOST=database
+      - PG_HOST=pgdb
       - PG_DATABASE=postgres
       - PG_USER=postgres
       - PG_PASSWORD=postgres 
       - PG_PORT=5432
       - DATABASE_URL=postgresql://postgres:postgres@database:5432/postgres
   
-  database:
+  pgdb:
     image: postgres:13-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
