@@ -5,18 +5,35 @@ from strawberry.fastapi import GraphQLRouter
 import typing 
 import psycopg2
 import os
+from fastapi.middleware.cors import CORSMiddleware
+import time
+
+def establish_connection():
+    conn = None
+    retry_attempts = 5
+    retry_delay = 2
+
+    for attempt in range(retry_attempts):
+        try:
+            conn = psycopg2.connect(
+                host=os.environ.get('PG_HOST'),
+                port=os.environ.get('PG_PORT'),
+                database=os.environ.get('PG_DATABASE'),
+                user=os.environ.get('PG_USER'),
+                password=os.environ.get('PG_PASSWORD')
+            )
+
+            conn.autocommit = True
+            return conn
+
+        except (psycopg2.OperationalError, psycopg2.Error) as e:
+            print(f"Connection attempt {attempt + 1} failed: {str(e)}")
+            time.sleep(retry_delay)
+
+    raise Exception("Failed to establish a connection to the PostgreSQL database")
 
 try:
-    conn = psycopg2.connect(
-        host="pgdb",
-        port=5432,
-        database="postgres",
-        user="postgres",
-        password="postgres"
-    )
-
-    # reconnect if connection is closed
-    conn.autocommit = True
+    conn = establish_connection() 
     cursor = conn.cursor()
 
     print("Connected to the PostgreSQL database")
@@ -72,6 +89,15 @@ graphql_app = GraphQLRouter(
 
 app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["*"],
+    allow_headers=["*"], 
+)
 
 if __name__ == "__main__": 
     try:
