@@ -15,14 +15,14 @@ def establish_connection():
 
     for attempt in range(retry_attempts):
         try:
-            conn = psycopg2.connect(
-                host=os.environ['PG_HOST'],
-                port=os.environ['PG_PORT'],
-                database=os.environ['PG_DATABASE'],
-                user=os.environ['PG_USER'],
-                password=os.environ['PG_PASSWORD']
-            )
-
+            #conn = psycopg2.connect(
+            #    host=os.environ['PG_HOST'],
+            #    port=os.environ['PG_PORT'],
+            #    database=os.environ['PG_DATABASE'],
+            #    user=os.environ['PG_USER'],
+            #    password=os.environ['PG_PASSWORD']
+            #)
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
             conn.autocommit = True
             return conn
 
