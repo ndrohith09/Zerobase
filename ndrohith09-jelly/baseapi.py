@@ -6,6 +6,7 @@ import typing
 import psycopg2
 import os
 from fastapi.middleware.cors import CORSMiddleware
+import time
 
 def establish_connection():
     conn = None
