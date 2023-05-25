@@ -1,52 +1,27 @@
-kind: Environment
-name: Zero-Master
-type: primary
-urlHandle: e24mqw
-components:
-    -
-        kind: Application
-        name: graphapi
-        gitRepo: 'https://github.com/ndrohith09/zerobase.git'
-        gitBranch: main
-        gitApplicationPath: base-environment
-        dockerCompose:
-            build:
-                context: ./base-environment
-                dockerfile: Dockerfile
-            environment:
-                DATABASE_URL: 'postgresql://postgres:postgres@database:5432/postgres'
-                PG_DATABASE: postgres
-                PG_HOST: pgdb
-                PG_PASSWORD: postgres
-                PG_PORT: '5432'
-                PG_USER: postgres
-            ports:
-                - '8000:8000'
-        hosts:
-            -
-                hostname: 'graphapi-{{ env.base_domain }}'
-                path: /
-                servicePort: 8000
-    -
-        kind: Database
-        name: pgdb
-        gitRepo: 'https://github.com/ndrohith09/zerobase.git'
-        gitBranch: main
-        dockerCompose:
-            environment:
-                POSTGRES_DB: postgres
-                POSTGRES_PASSWORD: postgres
-                POSTGRES_USER: postgres
-            image: 'postgres:13-alpine'
-            ports:
-                - '5432:5432'
-        volumes:
-            -
-                name: postgres-data
-                mount: /var/lib/postgresql/data
-                subPath: ''
+version: '3.7'
+services:
+  graphapi:
+    build: ./ 
+    ports:
+      - 8000:8000
+    environment:
+      - PG_HOST=pgdb
+      - PG_DATABASE=postgres
+      - PG_USER=postgres
+      - PG_PASSWORD=postgres 
+      - PG_PORT=5432
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/postgres
+  
+  pgdb:
+    image: postgres:15.2-alpine3.17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
 volumes:
-    -
-        name: postgres-data
-        size: 10Mi
-        type: disk
+    postgres_data:
