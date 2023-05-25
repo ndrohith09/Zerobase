@@ -8,11 +8,11 @@ import os
 
 try:
     conn = psycopg2.connect(
-        host=os.environ.get('PG_HOST'),
-        port= os.environ.get('PG_PORT'),
-        database=os.environ.get('PG_DATABASE'),
-        user=os.environ.get('PG_USER'),
-        password=os.environ.get('PG_PASSWORD')
+        host="pgdb",
+        port=5432,
+        database="postgres",
+        user="postgres",
+        password="postgres"
     )
 
     # reconnect if connection is closed
