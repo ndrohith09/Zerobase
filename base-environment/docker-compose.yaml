@@ -10,6 +10,7 @@ services:
       - PG_USER=postgres
       - PG_PORT=5432
       - PG_PASSWORD=postgres
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/postgres
   
   pgdb:
     image: postgres:15.2-alpine3.17
