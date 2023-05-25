@@ -7,24 +7,32 @@ import psycopg2
 import os
 from fastapi.middleware.cors import CORSMiddleware
 
-try:
-    conn = psycopg2.connect(
-        host=os.environ.get('PG_HOST'),
-        port= os.environ.get('PG_PORT'),
-        database=os.environ.get('PG_DATABASE'),
-        user=os.environ.get('PG_USER'),
-        password=os.environ.get('PG_PASSWORD')
-    )
+def establish_connection():
+    conn = None
+    retry_attempts = 5
+    retry_delay = 2
 
-    # reconnect if connection is closed
-    conn.autocommit = True
+    for attempt in range(retry_attempts):
+        try:
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            conn.autocommit = True
+            return conn
+
+        except (psycopg2.OperationalError, psycopg2.Error) as e:
+            print(f"Connection attempt {attempt + 1} failed: {str(e)}")
+            time.sleep(retry_delay)
+
+    raise Exception("Failed to establish a connection to the PostgreSQL database")
+
+try:
+    conn = establish_connection() 
     cursor = conn.cursor()
 
     print("Connected to the PostgreSQL database")
 
 except (Exception, psycopg2.DatabaseError) as error:
     print("Cannot connect to the PostgreSQL database")
-    print(error)  
+    print(error) 
 
 #*main
 def main():
