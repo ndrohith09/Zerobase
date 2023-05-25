@@ -25,20 +25,68 @@ except (Exception, psycopg2.DatabaseError) as error:
     print(error)  
 
 #*main
-def main(): 
+def main():
+    cursor.execute('CREATE TABLE IF NOT EXISTS Animals (id SERIAL PRIMARY KEY, breed VARCHAR(200), age INT)') 
+    conn.commit() 
     print("Table created successfully")
 
 #*Dataclasses
+@strawberry.type
+class Animals:
+    id: str
+    breed: str
+    age: str
+
  
 
 @strawberry.type
 class Query:
-    #*graphquery     
+    #*graphquery
+    @strawberry.field
+    def all_animals(self) -> typing.List[Animals]:
+        cursor.execute("SELECT * FROM Animals")
+        lst = cursor.fetchall()
+        animals = []
+        for i in lst:
+            animals.append(Animals(id=i[0], breed=i[1], age=i[2]))
+        return animals
+
+    @strawberry.field
+    def get_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Animals(id=lst[0], breed=lst[1], age=lst[2])
+         
     
 
 @strawberry.type
 class Mutation:
-    #*graphmutation 
+    #*graphmutation
+    @strawberry.mutation
+    def create_animals(self, breed: str, age: str) -> Animals:
+        cursor.execute("INSERT INTO Animals (breed, age) VALUES (%s, %s) RETURNING id", (breed, age))
+        conn.commit()
+        animals_id = cursor.fetchone()[0]
+        return Animals(id=animals_id,breed=breed, age=age)
+    
+    @strawberry.mutation
+    def update_animals(self, id: str, breed: str, age: str) -> Animals:
+        
+        cursor.execute("UPDATE Animals SET breed=%s, age=%s WHERE id = %s", (breed, age, id))
+        conn.commit()
+        return Animals(id=id,breed=breed, age=age)
+    
+    @strawberry.mutation
+    def delete_animals(self, id: str) -> Animals:
+        cursor.execute("SELECT * FROM Animals WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        if lst is None:
+            return Animals(id='No Data Found',breed='No Data Found', age='No Data Found')
+
+        cursor.execute("DELETE FROM Animals WHERE id = %s", (id,))
+        conn.commit()
+        return Animals(id=lst[0], breed=lst[1], age=lst[2])
+     
 
 schema = strawberry.Schema(Query , Mutation)
 
