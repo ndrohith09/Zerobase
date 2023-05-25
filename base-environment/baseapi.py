@@ -15,7 +15,10 @@ try:
         password=os.environ.get('PG_PASSWORD')
     )
 
+    # reconnect if connection is closed
+    conn.autocommit = True
     cursor = conn.cursor()
+
     print("Connected to the PostgreSQL database")
 
 except (Exception, psycopg2.DatabaseError) as error:
@@ -46,24 +49,6 @@ class Query:
         for i in lst:
             sample.append(Sample(id=i[0], word=i[1]))
         return sample
-
-    @strawberry.field
-    def get_db_status(self) -> str:
-        try:
-            conn = psycopg2.connect(
-                host=os.environ.get('PG_HOST'),
-                port= os.environ.get('PG_PORT'),
-                database=os.environ.get('PG_DATABASE'),
-                user=os.environ.get('PG_USER'),
-                password=os.environ.get('PG_PASSWORD')
-            )
-
-            cursor = conn.cursor()
-            message = "Connected to the PostgreSQL database"
-
-        except (Exception, psycopg2.DatabaseError) as error:
-            message = "Cannot connect to the PostgreSQL database" + str(error)
-        return message
 
 @strawberry.type
 class Mutation:
