@@ -24,22 +24,41 @@ except (Exception, psycopg2.DatabaseError) as error:
 
 #*main
 def main(): 
+    cursor.execute('CREATE TABLE IF NOT EXISTS Sample (id SERIAL PRIMARY KEY, word VARCHAR(255))') 
+    conn.commit() 
     print("Table created successfully")
 
 #*Dataclasses
- 
+@strawberry.type
+class Sample:
+    id : str 
+    word : str
 
 @strawberry.type
 class Query:
     #*graphquery     
-    
-    pass
+
+    @strawberry.field
+    def all_sample(self) -> typing.List[Sample]:
+        cursor.execute("SELECT * FROM Sample")
+        lst = cursor.fetchall()
+        sample = []
+        for i in lst:
+            sample.append(Sample(id=i[0], word=i[1]))
+        return sample
+
 
 @strawberry.type
 class Mutation:
     #*graphmutation 
 
-    pass
+    @strawberry.mutation
+    def create_sample(self, word: str) -> Sample:
+        print(word , type(word))
+        cursor.execute("INSERT INTO Sample (word) VALUES (%s) RETURNING id", (word,))
+        conn.commit()
+        samples_id = cursor.fetchone()[0]
+        return Sample(id=samples_id,word=word)
 
 schema = strawberry.Schema(Query , Mutation)
 
