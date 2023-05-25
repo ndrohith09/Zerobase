@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  graphapi:
+  fastapi:
     build: ./ 
     ports:
       - 8000:8000
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres    
+      - POSTGRES_DB=postgres
 
 volumes:
-    postgres_data:    
+    postgres_data:
