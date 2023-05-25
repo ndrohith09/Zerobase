@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  fastapi:
+  graphapi:
     build: ./ 
     ports:
       - 8000:8000
