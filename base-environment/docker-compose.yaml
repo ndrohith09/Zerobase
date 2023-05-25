@@ -8,6 +8,7 @@ services:
       - PG_HOST=pgdb
       - PG_DATABASE=postgres
       - PG_USER=postgres
+      - PG_PORT=5432
       - PG_PASSWORD=postgres
   
   pgdb:
