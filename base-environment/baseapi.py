@@ -1,10 +1,8 @@
 import strawberry
 import uvicorn
-from fastapi import FastAPI, Depends, Request, WebSocket, BackgroundTasks
-from strawberry.types import Info
+from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
-import typing
-import json 
+import typing 
 import psycopg2
 import os
 
@@ -35,10 +33,13 @@ def main():
 class Query:
     #*graphquery     
     
+    pass
 
 @strawberry.type
 class Mutation:
     #*graphmutation 
+
+    pass
 
 schema = strawberry.Schema(Query , Mutation)
 
