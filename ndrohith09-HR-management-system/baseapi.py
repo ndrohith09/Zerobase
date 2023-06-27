@@ -37,6 +37,8 @@ except (Exception, psycopg2.DatabaseError) as error:
 
 #*main
 def main():
+    cursor.execute('CREATE TABLE IF NOT EXISTS Insurance (id SERIAL PRIMARY KEY, insurance_id INT, insurance_type VARCHAR, e_id INT)') 
+    conn.commit()
     cursor.execute('CREATE TABLE IF NOT EXISTS Department (id SERIAL PRIMARY KEY, d_id INT, name VARCHAR, manager_id INT)') 
     conn.commit()
     cursor.execute('CREATE TABLE IF NOT EXISTS Employee (id SERIAL PRIMARY KEY, e_id INT, name VARCHAR, age INT, phone INT, email VARCHAR, salary DECIMAL)') 
@@ -46,6 +48,13 @@ def main():
     print("Table created successfully")
 
 #*Dataclasses
+@strawberry.type
+class Insurance:
+    id: str
+    insurance_id: str
+    insurance_type: str
+    e_id: str
+
 @strawberry.type
 class Department:
     id: str
@@ -71,6 +80,21 @@ class Sample:
 @strawberry.type
 class Query:
     #*graphquery
+    @strawberry.field
+    def all_insurance(self) -> typing.List[Insurance]:
+        cursor.execute("SELECT * FROM Insurance")
+        lst = cursor.fetchall()
+        insurance = []
+        for i in lst:
+            insurance.append(Insurance(id=i[0], insurance_id=i[1], insurance_type=i[2], e_id=i[3]))
+        return insurance
+
+    @strawberry.field
+    def get_insurance(self, id: str) -> Insurance:
+        cursor.execute("SELECT * FROM Insurance WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Insurance(id=lst[0], insurance_id=lst[1], insurance_type=lst[2], e_id=lst[3])
+    
     @strawberry.field
     def all_department(self) -> typing.List[Department]:
         cursor.execute("SELECT * FROM Department")
@@ -114,6 +138,31 @@ class Query:
 @strawberry.type
 class Mutation:
     #*graphmutation
+    @strawberry.mutation
+    def create_insurance(self, insurance_id: str, insurance_type: str, e_id: str) -> Insurance:
+        cursor.execute("INSERT INTO Insurance (insurance_id, insurance_type, e_id) VALUES (%s, %s, %s) RETURNING id", (insurance_id, insurance_type, e_id))
+        conn.commit()
+        insurance_id = cursor.fetchone()[0]
+        return Insurance(id=insurance_id,insurance_id=insurance_id, insurance_type=insurance_type, e_id=e_id)
+    
+    @strawberry.mutation
+    def update_insurance(self, id: str, insurance_id: str, insurance_type: str, e_id: str) -> Insurance:
+        
+        cursor.execute("UPDATE Insurance SET insurance_id=%s, insurance_type=%s, e_id=%s WHERE id = %s", (insurance_id, insurance_type, e_id, id))
+        conn.commit()
+        return Insurance(id=id,insurance_id=insurance_id, insurance_type=insurance_type, e_id=e_id)
+    
+    @strawberry.mutation
+    def delete_insurance(self, id: str) -> Insurance:
+        cursor.execute("SELECT * FROM Insurance WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        if lst is None:
+            return Insurance(id='No Data Found',insurance_id='No Data Found', insurance_type='No Data Found', e_id='No Data Found')
+
+        cursor.execute("DELETE FROM Insurance WHERE id = %s", (id,))
+        conn.commit()
+        return Insurance(id=lst[0], insurance_id=lst[1], insurance_type=lst[2], e_id=lst[3])
+    
     @strawberry.mutation
     def create_department(self, d_id: str, name: str, manager_id: str) -> Department:
         cursor.execute("INSERT INTO Department (d_id, name, manager_id) VALUES (%s, %s, %s) RETURNING id", (d_id, name, manager_id))
