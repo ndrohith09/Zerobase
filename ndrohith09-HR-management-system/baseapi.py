@@ -37,6 +37,8 @@ except (Exception, psycopg2.DatabaseError) as error:
 
 #*main
 def main():
+    cursor.execute('CREATE TABLE IF NOT EXISTS Department (id SERIAL PRIMARY KEY, d_id INT, name VARCHAR, manager_id INT)') 
+    conn.commit()
     cursor.execute('CREATE TABLE IF NOT EXISTS Employee (id SERIAL PRIMARY KEY, e_id INT, name VARCHAR, age INT, phone INT, email VARCHAR, salary DECIMAL)') 
     conn.commit() 
     cursor.execute('CREATE TABLE IF NOT EXISTS Sample (id SERIAL PRIMARY KEY, word VARCHAR(255))') 
@@ -44,6 +46,13 @@ def main():
     print("Table created successfully")
 
 #*Dataclasses
+@strawberry.type
+class Department:
+    id: str
+    d_id: str
+    name: str
+    manager_id: str
+
 @strawberry.type
 class Employee:
     id: str
@@ -62,6 +71,21 @@ class Sample:
 @strawberry.type
 class Query:
     #*graphquery
+    @strawberry.field
+    def all_department(self) -> typing.List[Department]:
+        cursor.execute("SELECT * FROM Department")
+        lst = cursor.fetchall()
+        department = []
+        for i in lst:
+            department.append(Department(id=i[0], d_id=i[1], name=i[2], manager_id=i[3]))
+        return department
+
+    @strawberry.field
+    def get_department(self, id: str) -> Department:
+        cursor.execute("SELECT * FROM Department WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        return Department(id=lst[0], d_id=lst[1], name=lst[2], manager_id=lst[3])
+    
     @strawberry.field
     def all_employee(self) -> typing.List[Employee]:
         cursor.execute("SELECT * FROM Employee")
@@ -90,6 +114,31 @@ class Query:
 @strawberry.type
 class Mutation:
     #*graphmutation
+    @strawberry.mutation
+    def create_department(self, d_id: str, name: str, manager_id: str) -> Department:
+        cursor.execute("INSERT INTO Department (d_id, name, manager_id) VALUES (%s, %s, %s) RETURNING id", (d_id, name, manager_id))
+        conn.commit()
+        department_id = cursor.fetchone()[0]
+        return Department(id=department_id,d_id=d_id, name=name, manager_id=manager_id)
+    
+    @strawberry.mutation
+    def update_department(self, id: str, d_id: str, name: str, manager_id: str) -> Department:
+        
+        cursor.execute("UPDATE Department SET d_id=%s, name=%s, manager_id=%s WHERE id = %s", (d_id, name, manager_id, id))
+        conn.commit()
+        return Department(id=id,d_id=d_id, name=name, manager_id=manager_id)
+    
+    @strawberry.mutation
+    def delete_department(self, id: str) -> Department:
+        cursor.execute("SELECT * FROM Department WHERE id = %s", (id,))
+        lst = cursor.fetchone()
+        if lst is None:
+            return Department(id='No Data Found',d_id='No Data Found', name='No Data Found', manager_id='No Data Found')
+
+        cursor.execute("DELETE FROM Department WHERE id = %s", (id,))
+        conn.commit()
+        return Department(id=lst[0], d_id=lst[1], name=lst[2], manager_id=lst[3])
+    
     @strawberry.mutation
     def create_employee(self, e_id: str, name: str, age: str, phone: str, email: str, salary: str) -> Employee:
         cursor.execute("INSERT INTO Employee (e_id, name, age, phone, email, salary) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id", (e_id, name, age, phone, email, salary))
